@@ -1,0 +1,53 @@
+# Reports (generated output)
+reports/*.html
+reports/*.json
+reports/*.csv
+reports/*.xlsx
+
+# Keep the reports folder structure
+!reports/.gitkeep
+
+# PowerShell
+*.ps1xml
+*.psd1~
+*.psm1~
+
+# Logs
+*.log
+logs/
+
+# Configuration overrides (keep template)
+config/assessment-config.local.json
+
+# Credentials (never commit!)
+*.credentials
+*.key
+secrets/
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+
+# PowerShell module cache
+PSScriptAnalyzerSettings.psd1
+
+# Test results
+TestResults/
+*.trx
+
+# Package managers
+packages/
+node_modules/

@@ -1,0 +1,12 @@
+# Normalize line endings and text files across platforms
+* text=auto
+
+# Treat PowerShell scripts as text
+*.ps1 text
+*.psm1 text
+*.psd1 text
+
+# Ensure JSON and Markdown are normalized
+*.json text
+*.md text
+*.csv text

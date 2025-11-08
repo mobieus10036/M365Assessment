@@ -1,0 +1,32 @@
+{
+  "Security": {
+    "MFAEnforcementThreshold": 95,
+    "PrivilegedAccountMFARequired": true,
+    "LegacyAuthAllowed": false,
+    "MinConditionalAccessPolicies": 1
+  },
+  "Compliance": {
+    "DLPPoliciesRequired": true,
+    "RetentionPoliciesRequired": true,
+    "SensitivityLabelsRequired": true
+  },
+  "Exchange": {
+    "SPFRecordRequired": true,
+    "DKIMEnabled": true,
+    "DMARCPolicyRequired": true,
+    "MailboxAuditingEnabled": true
+  },
+  "SharePoint": {
+    "ExternalSharingLevel": "ExistingExternalUserSharingOnly",
+    "RequireAnonymousLinksExpire": true,
+    "AnonymousLinkExpirationDays": 30
+  },
+  "Teams": {
+    "AllowGuestAccess": true,
+    "AllowExternalAccess": true
+  },
+  "Licensing": {
+    "InactiveDaysThreshold": 90,
+    "MinimumLicenseUtilization": 85
+  }
+}
