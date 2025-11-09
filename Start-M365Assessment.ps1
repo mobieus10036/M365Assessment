@@ -339,6 +339,16 @@ function Export-Results {
             Write-Success "Non-compliant mailboxes CSV: $mailboxCsvPath"
             Write-Info "  → $($mailboxAuditResult.NonCompliantMailboxes.Count) mailbox(es) without auditing exported"
         }
+
+        # Export inactive mailboxes to separate CSV
+        $licenseOptResult = $script:AssessmentResults | Where-Object { $_.CheckName -eq "License Optimization" -and $_.InactiveMailboxes }
+        if ($licenseOptResult -and $licenseOptResult.InactiveMailboxes.Count -gt 0) {
+            $inactiveCsvPath = Join-Path $OutputPath "$($baseFileName)_InactiveMailboxes.csv"
+            $licenseOptResult.InactiveMailboxes | 
+                Export-Csv -Path $inactiveCsvPath -NoTypeInformation -Encoding UTF8
+            Write-Success "Inactive mailboxes CSV: $inactiveCsvPath"
+            Write-Info "  → $($licenseOptResult.InactiveMailboxes.Count) inactive licensed user(s) exported"
+        }
     }
 
     # HTML Export
@@ -376,6 +386,28 @@ function Export-HTMLReport {
         
         # Check for detailed non-compliant mailboxes
         $detailsCell = $result.Message
+        
+        # Handle inactive mailboxes from License Optimization
+        if ($result.InactiveMailboxes -and $result.InactiveMailboxes.Count -gt 0) {
+            $detailsCell += "<br><br><strong>⚠️ Inactive Licensed Users ($($result.InactiveMailboxes.Count)):</strong><br>"
+            $detailsCell += "<ul style='margin-top: 5px; padding-left: 20px; font-size: 0.9em;'>"
+            $displayCount = [Math]::Min(20, $result.InactiveMailboxes.Count)
+            for ($i = 0; $i -lt $displayCount; $i++) {
+                $mailbox = $result.InactiveMailboxes[$i]
+                $lastSignIn = if ($mailbox.LastSignInDate -eq 'Never') { 
+                    '<span style="color: #d13438; font-weight: bold;">Never</span>' 
+                } else { 
+                    $mailbox.LastSignInDate 
+                }
+                $detailsCell += "<li><code>$($mailbox.UserPrincipalName)</code> - $($mailbox.DisplayName) | Last: $lastSignIn ($($mailbox.DaysSinceLastSignIn) days ago)</li>"
+            }
+            if ($result.InactiveMailboxes.Count -gt 20) {
+                $detailsCell += "<li><em>...and $($result.InactiveMailboxes.Count - 20) more users (see CSV export)</em></li>"
+            }
+            $detailsCell += "</ul>"
+        }
+        
+        # Handle non-compliant mailboxes from Mailbox Auditing
         if ($result.NonCompliantMailboxes -and $result.NonCompliantMailboxes.Count -gt 0) {
             $detailsCell += "<br><br><strong>🚨 Non-Compliant Mailboxes ($($result.NonCompliantMailboxes.Count)):</strong><br>"
             $detailsCell += "<ul style='margin-top: 5px; padding-left: 20px; font-size: 0.9em;'>"
