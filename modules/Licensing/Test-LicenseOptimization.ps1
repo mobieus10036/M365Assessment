@@ -39,6 +39,7 @@ function Test-LicenseOptimization {
                 Severity = "Info"
                 Message = "No licensed users found"
                 Details = @{}
+                InactiveMailboxes = @()
                 Recommendation = "Verify Microsoft Graph permissions"
                 DocumentationUrl = "https://learn.microsoft.com/microsoft-365/commerce/licenses/subscriptions-and-licenses"
                 RemediationSteps = @()
@@ -53,21 +54,30 @@ function Test-LicenseOptimization {
         } else { 90 }
 
         $cutoffDate = (Get-Date).AddDays(-$inactiveDaysThreshold)
-        $inactiveUsers = @()
+        $inactiveMailboxes = @()
 
         foreach ($user in $licensedUsers) {
             $lastSignIn = $null
+            $daysSinceLastSignIn = 'N/A'
             
             if ($user.SignInActivity.LastSignInDateTime) {
                 $lastSignIn = [DateTime]$user.SignInActivity.LastSignInDateTime
+                $daysSinceLastSignIn = [Math]::Round(((Get-Date) - $lastSignIn).TotalDays, 0)
             }
 
             if ($null -eq $lastSignIn -or $lastSignIn -lt $cutoffDate) {
-                $inactiveUsers += $user.UserPrincipalName
+                $inactiveMailboxes += [PSCustomObject]@{
+                    UserPrincipalName = $user.UserPrincipalName
+                    DisplayName = $user.DisplayName
+                    LastSignInDate = if ($lastSignIn) { $lastSignIn.ToString('yyyy-MM-dd') } else { 'Never' }
+                    DaysSinceLastSignIn = $daysSinceLastSignIn
+                    AccountEnabled = $user.AccountEnabled
+                    LicenseCount = $user.AssignedLicenses.Count
+                }
             }
         }
 
-        $inactiveCount = $inactiveUsers.Count
+        $inactiveCount = $inactiveMailboxes.Count
         $inactivePercentage = if ($totalLicensedUsers -gt 0) {
             [math]::Round(($inactiveCount / $totalLicensedUsers) * 100, 1)
         } else { 0 }
@@ -86,6 +96,20 @@ function Test-LicenseOptimization {
         }
 
         $message = "$inactiveCount inactive licensed users ($inactivePercentage%) - not signed in for $inactiveDaysThreshold+ days"
+        
+        # Add sample of inactive mailboxes to message
+        if ($inactiveCount -gt 0 -and $inactiveCount -le 10) {
+            $sampleList = ($inactiveMailboxes | ForEach-Object { 
+                "$($_.UserPrincipalName) (Last: $($_.LastSignInDate))" 
+            }) -join ", "
+            $message += ". Examples: $sampleList"
+        }
+        elseif ($inactiveCount -gt 10) {
+            $sampleList = ($inactiveMailboxes | Select-Object -First 5 | ForEach-Object { 
+                "$($_.UserPrincipalName) (Last: $($_.LastSignInDate))" 
+            }) -join ", "
+            $message += ". Examples: $sampleList (and $($inactiveCount - 5) more...)"
+        }
 
         return [PSCustomObject]@{
             CheckName = "License Optimization"
@@ -98,22 +122,22 @@ function Test-LicenseOptimization {
                 InactiveUsers = $inactiveCount
                 InactivePercentage = $inactivePercentage
                 InactiveDaysThreshold = $inactiveDaysThreshold
-                SampleInactiveUsers = ($inactiveUsers | Select-Object -First 10) -join ', '
             }
+            InactiveMailboxes = $inactiveMailboxes
             Recommendation = if ($status -ne "Pass") {
-                "Review inactive licensed users and reclaim unused licenses. Consider offboarding inactive accounts."
+                "Review $inactiveCount inactive licensed user(s) and consider reclaiming unused licenses. See InactiveMailboxes list in JSON/CSV report for details."
             } else {
                 "License utilization is good. Continue monitoring for inactive users monthly."
             }
             DocumentationUrl = "https://learn.microsoft.com/microsoft-365/commerce/licenses/subscriptions-and-licenses"
             RemediationSteps = @(
-                "1. Export list of inactive licensed users"
-                "2. Verify if users are truly inactive or on leave"
-                "3. Remove licenses from inactive accounts"
-                "4. Consider account deactivation/deletion for former employees"
-                "5. Implement automated license reclamation process"
-                "6. Review license usage reports monthly"
-                "7. Right-size license SKUs based on actual usage"
+                "1. Review InactiveMailboxes CSV export for complete list"
+                "2. Verify if users are truly inactive (check for leave, contractors, etc.)"
+                "3. Coordinate with HR/managers before removing licenses"
+                "4. For confirmed inactive: Remove licenses to reduce costs"
+                "5. For terminated employees: Follow offboarding process"
+                "6. Implement automated license reclamation policies"
+                "7. Review license usage reports monthly for ongoing optimization"
             )
         }
     }
@@ -125,6 +149,7 @@ function Test-LicenseOptimization {
             Severity = "Info"
             Message = "Unable to assess license optimization: $_"
             Details = @{ Error = $_.Exception.Message }
+            InactiveMailboxes = @()
             Recommendation = "Verify Microsoft Graph permissions: User.Read.All, AuditLog.Read.All"
             DocumentationUrl = "https://learn.microsoft.com/microsoft-365/commerce/licenses/subscriptions-and-licenses"
             RemediationSteps = @()
