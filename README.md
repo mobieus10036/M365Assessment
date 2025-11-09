@@ -124,6 +124,33 @@ Customize assessment thresholds and behaviors by editing `config/assessment-conf
 .\Start-M365Assessment.ps1 -ConfigPath .\custom-config.json
 ```
 
+## 🔧 Remediation Tools
+
+### Enable Mailbox Auditing for Non-Compliant Mailboxes
+
+The toolkit includes a remediation script to automatically enable auditing for mailboxes identified in the assessment:
+
+```powershell
+# Preview changes without applying them
+.\Enable-MailboxAuditing.ps1 -WhatIf
+
+# Enable auditing for all non-compliant mailboxes
+.\Enable-MailboxAuditing.ps1
+
+# Skip confirmation prompts
+.\Enable-MailboxAuditing.ps1 -Force
+
+# Use a specific report file
+.\Enable-MailboxAuditing.ps1 -CsvPath .\reports\M365Assessment_20241109_120000_NonCompliantMailboxes.csv
+```
+
+The script will:
+- ✅ Read the latest non-compliant mailboxes CSV report
+- ✅ Display mailboxes that need remediation
+- ✅ Enable auditing with confirmation
+- ✅ Provide success/failure summary
+- ✅ Export any errors to a separate CSV file
+
 ## 📚 Documentation
 
 - [Best Practices Reference](docs/best-practices-reference.md)

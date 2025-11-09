@@ -329,6 +329,16 @@ function Export-Results {
         $script:AssessmentResults | Select-Object CheckName, Category, Status, Severity, Message, Recommendation | 
             Export-Csv -Path $csvPath -NoTypeInformation -Encoding UTF8
         Write-Success "CSV report: $csvPath"
+        
+        # Export detailed non-compliant mailboxes to separate CSV
+        $mailboxAuditResult = $script:AssessmentResults | Where-Object { $_.CheckName -eq "Mailbox Auditing" -and $_.NonCompliantMailboxes }
+        if ($mailboxAuditResult -and $mailboxAuditResult.NonCompliantMailboxes.Count -gt 0) {
+            $mailboxCsvPath = Join-Path $OutputPath "$($baseFileName)_NonCompliantMailboxes.csv"
+            $mailboxAuditResult.NonCompliantMailboxes | 
+                Export-Csv -Path $mailboxCsvPath -NoTypeInformation -Encoding UTF8
+            Write-Success "Non-compliant mailboxes CSV: $mailboxCsvPath"
+            Write-Info "  → $($mailboxAuditResult.NonCompliantMailboxes.Count) mailbox(es) without auditing exported"
+        }
     }
 
     # HTML Export
@@ -364,13 +374,29 @@ function Export-HTMLReport {
         $statusClass = $result.Status.ToLower()
         $severityClass = $result.Severity.ToLower()
         
+        # Check for detailed non-compliant mailboxes
+        $detailsCell = $result.Message
+        if ($result.NonCompliantMailboxes -and $result.NonCompliantMailboxes.Count -gt 0) {
+            $detailsCell += "<br><br><strong>🚨 Non-Compliant Mailboxes ($($result.NonCompliantMailboxes.Count)):</strong><br>"
+            $detailsCell += "<ul style='margin-top: 5px; padding-left: 20px; font-size: 0.9em;'>"
+            $displayCount = [Math]::Min(20, $result.NonCompliantMailboxes.Count)
+            for ($i = 0; $i -lt $displayCount; $i++) {
+                $mailbox = $result.NonCompliantMailboxes[$i]
+                $detailsCell += "<li><code>$($mailbox.UserPrincipalName)</code> - $($mailbox.DisplayName)</li>"
+            }
+            if ($result.NonCompliantMailboxes.Count -gt 20) {
+                $detailsCell += "<li><em>...and $($result.NonCompliantMailboxes.Count - 20) more mailboxes (see CSV export)</em></li>"
+            }
+            $detailsCell += "</ul>"
+        }
+        
         $resultsHtml += @"
         <tr class="$statusClass">
             <td>$($result.CheckName)</td>
             <td><span class="category">$($result.Category)</span></td>
             <td><span class="status status-$statusClass">$($result.Status)</span></td>
             <td><span class="severity severity-$severityClass">$($result.Severity)</span></td>
-            <td>$($result.Message)</td>
+            <td>$detailsCell</td>
             <td>$($result.Recommendation)</td>
             <td><a href="$($result.DocumentationUrl)" target="_blank">📘 Docs</a></td>
         </tr>
@@ -435,6 +461,9 @@ function Get-HTMLTemplate {
         .category { background: #0078d4; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
         a { color: #0078d4; text-decoration: none; }
         a:hover { text-decoration: underline; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 0.9em; color: #d13438; }
+        ul { margin: 0; }
+        ul li { margin: 3px 0; }
     </style>
 </head>
 <body>
