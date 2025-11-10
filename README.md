@@ -1,9 +1,12 @@
-# Microsoft 365 Tenant Assessment Toolkit v3
+# Microsoft 365 Tenant Assessment Toolkit v3.0.0
 
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B%20%7C%207%2B-blue.svg)](https://github.com/PowerShell/PowerShell)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Made with GitHub Copilot](https://img.shields.io/badge/Made%20with-GitHub%20Copilot-purple.svg)](https://github.com/features/copilot)
 
 A comprehensive PowerShell-based assessment toolkit for Microsoft 365 tenants, focused on security, compliance, and best practice validation.
+
+*Created with assistance from GitHub Copilot*
 
 ## 🎯 Overview
 
@@ -31,8 +34,8 @@ This toolkit performs automated assessments across your Microsoft 365 tenant to 
 
 1. **Clone the repository**:
    ```powershell
-   git clone https://github.com/yourusername/m365-tenant-assessment-kit-v3.git
-   cd m365-tenant-assessment-kit-v3
+   git clone https://github.com/mobieus10036/M365Assessment.git
+   cd M365Assessment
    ```
 
 2. **Install required PowerShell modules**:
@@ -184,15 +187,19 @@ This toolkit performs **read-only** operations and does not make changes to your
 
 ## 🙏 Acknowledgments
 
-- Microsoft Security Best Practices
-- Microsoft 365 Security & Compliance Documentation
-- Community contributors
+- **GitHub Copilot** - AI pair programming assistant that helped create this toolkit
+- Microsoft Security Best Practices & Documentation
+- Microsoft 365 Security & Compliance Community
+- All contributors who help improve this project
 
 ## 📧 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/m365-tenant-assessment-kit-v3/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/m365-tenant-assessment-kit-v3/discussions)
+- **Issues**: [GitHub Issues](https://github.com/mobieus10036/M365Assessment/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/mobieus10036/M365Assessment/discussions)
+- **Security Issues**: See [SECURITY.md](SECURITY.md)
 
 ---
+
+**Made with ❤️ and GitHub Copilot**
 
 **Made with ❤️ for the Microsoft 365 Community**

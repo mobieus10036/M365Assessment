@@ -29,9 +29,12 @@
     Enables auditing without confirmation prompts.
 
 .NOTES
-    Author: M365 Assessment Toolkit
-    Version: 1.0
-    Requires: Exchange Online PowerShell Module
+    Project: M365 Assessment Toolkit
+    Repository: https://github.com/mobieus10036/M365Assessment
+    Author: mobieus10036
+    Version: 3.0.0
+    Created with assistance from GitHub Copilot
+    Requires: Exchange Online Management module
 #>
 
 [CmdletBinding(SupportsShouldProcess)]
@@ -50,7 +53,8 @@ function Write-ColorOutput {
         [string]$Message,
         [string]$Color = 'White'
     )
-    Write-Host $Message -ForegroundColor $Color
+    # Using Write-Information for better pipeline compatibility
+    Write-Information $Message -InformationAction Continue
 }
 
 function Get-LatestNonCompliantReport {

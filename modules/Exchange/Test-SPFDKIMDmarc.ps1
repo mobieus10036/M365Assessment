@@ -14,8 +14,11 @@
     PSCustomObject containing assessment results.
 
 .NOTES
-    Author: M365 Assessment Toolkit
-    Version: 2.0
+    Project: M365 Assessment Toolkit
+    Repository: https://github.com/mobieus10036/M365Assessment
+    Author: mobieus10036
+    Version: 3.0.0
+    Created with assistance from GitHub Copilot
     Updated: 2025-11-09 - Added DNS validation for SPF and DMARC
 #>
 

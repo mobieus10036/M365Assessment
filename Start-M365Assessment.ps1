@@ -52,8 +52,11 @@
     Runs full assessment with custom output location.
 
 .NOTES
-    Author: M365 Assessment Toolkit
-    Version: 1.0
+    Project: M365 Assessment Toolkit
+    Repository: https://github.com/mobieus10036/M365Assessment
+    Author: mobieus10036
+    Version: 3.0.0
+    Created with assistance from GitHub Copilot
     Requires: PowerShell 5.1+, Microsoft Graph, Exchange Online modules
 #>
 
@@ -95,38 +98,36 @@ function Write-Banner {
 
 ╔══════════════════════════════════════════════════════════════════════╗
 ║                                                                      ║
-║          Microsoft 365 Tenant Assessment Toolkit v3.0                ║
+║          Microsoft 365 Tenant Assessment Toolkit v3.0.0              ║
 ║                                                                      ║
 ║          Comprehensive Security & Best Practice Assessment           ║
+║                    Created with GitHub Copilot                       ║
 ║                                                                      ║
 ╚══════════════════════════════════════════════════════════════════════╝
 
 "@
-    Write-Host $banner -ForegroundColor Cyan
+    Write-Information $banner -InformationAction Continue
 }
 
 function Write-Step {
     param([string]$Message)
-    Write-Host "`n[$(Get-Date -Format 'HH:mm:ss')] " -NoNewline -ForegroundColor Gray
-    Write-Host $Message -ForegroundColor Yellow
+    $timestamp = Get-Date -Format 'HH:mm:ss'
+    Write-Information "`n[$timestamp] $Message" -InformationAction Continue
 }
 
 function Write-Success {
     param([string]$Message)
-    Write-Host "  ✓ " -NoNewline -ForegroundColor Green
-    Write-Host $Message -ForegroundColor White
+    Write-Information "  ✓ $Message" -InformationAction Continue
 }
 
 function Write-Failure {
     param([string]$Message)
-    Write-Host "  ✗ " -NoNewline -ForegroundColor Red
-    Write-Host $Message -ForegroundColor White
+    Write-Warning "  ✗ $Message"
 }
 
 function Write-Info {
     param([string]$Message)
-    Write-Host "  ℹ " -NoNewline -ForegroundColor Cyan
-    Write-Host $Message -ForegroundColor White
+    Write-Information "  ℹ $Message" -InformationAction Continue
 }
 
 function Load-Configuration {
@@ -193,7 +194,7 @@ function Connect-M365Services {
 
     # Microsoft Graph
     try {
-        Write-Host "  → Connecting to Microsoft Graph..." -ForegroundColor Gray
+        Write-Information "  → Connecting to Microsoft Graph..." -InformationAction Continue
         $graphScopes = @(
             'User.Read.All',
             'Directory.Read.All',
@@ -224,7 +225,7 @@ function Connect-M365Services {
 
     # Exchange Online (optional - some checks)
     try {
-        Write-Host "  → Connecting to Exchange Online..." -ForegroundColor Gray
+        Write-Information "  → Connecting to Exchange Online..." -InformationAction Continue
         Connect-ExchangeOnline -ShowBanner:$false -ErrorAction Stop
         Write-Success "Connected to Exchange Online"
     }
@@ -268,8 +269,8 @@ function Get-ModulesToRun {
     }
 
     foreach ($module in $modulesToRun) {
-        Write-Host "`n  ┌─ $module Assessment " -NoNewline -ForegroundColor Cyan
-        Write-Host ("─" * (50 - $module.Length)) -ForegroundColor Cyan
+        $separator = "─" * (50 - $module.Length)
+        Write-Information "`n  ┌─ $module Assessment $separator" -InformationAction Continue
 
         if ($moduleScripts.ContainsKey($module)) {
             foreach ($scriptFile in $moduleScripts[$module]) {
@@ -277,21 +278,20 @@ function Get-ModulesToRun {
                 
                 if (Test-Path $scriptPath) {
                     try {
-                        Write-Host "    → Running $([System.IO.Path]::GetFileNameWithoutExtension($scriptFile))..." -ForegroundColor Gray
+                        $scriptName = [System.IO.Path]::GetFileNameWithoutExtension($scriptFile)
+                        Write-Information "    → Running $scriptName..." -InformationAction Continue
                         . $scriptPath
                         $functionName = [System.IO.Path]::GetFileNameWithoutExtension($scriptFile)
                         $result = & $functionName -Config $script:Config
                         $script:AssessmentResults += $result
                         
                         # Display result
-                        $statusColor = switch ($result.Status) {
-                            'Pass' { 'Green' }
-                            'Fail' { 'Red' }
-                            'Warning' { 'Yellow' }
-                            default { 'White' }
+                        $statusMessage = "      [$($result.Status)] $($result.Message)"
+                        if ($result.Status -eq 'Fail') {
+                            Write-Warning $statusMessage
+                        } else {
+                            Write-Information $statusMessage -InformationAction Continue
                         }
-                        Write-Host "      [$($result.Status)] " -NoNewline -ForegroundColor $statusColor
-                        Write-Host $result.Message -ForegroundColor White
                     }
                     catch {
                         Write-Failure "Error running $scriptFile : $_"
@@ -300,8 +300,7 @@ function Get-ModulesToRun {
             }
         }
         
-        Write-Host "  └" -NoNewline -ForegroundColor Cyan
-        Write-Host ("─" * 65) -ForegroundColor Cyan
+        Write-Information "  $('─' * 67)" -InformationAction Continue
     }
 }
 
@@ -664,14 +663,17 @@ function Disconnect-M365Services {
 function Show-Summary {
     $duration = (Get-Date) - $script:StartTime
     
-    Write-Host "`n╔══════════════════════════════════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "║                    Assessment Complete! ✓                            ║" -ForegroundColor Green
-    Write-Host "╚══════════════════════════════════════════════════════════════════════╝" -ForegroundColor Green
-    Write-Host "`nExecution Time: " -NoNewline
-    Write-Host "$($duration.Minutes)m $($duration.Seconds)s" -ForegroundColor Cyan
-    Write-Host "Total Checks: " -NoNewline
-    Write-Host $script:AssessmentResults.Count -ForegroundColor Cyan
-    Write-Host "`n"
+    $summary = @"
+
+╔══════════════════════════════════════════════════════════════════════╗
+║                    Assessment Complete! ✓                            ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+Execution Time: $($duration.Minutes)m $($duration.Seconds)s
+Total Checks: $($script:AssessmentResults.Count)
+
+"@
+    Write-Information $summary -InformationAction Continue
 }
 
 #endregion
@@ -687,8 +689,10 @@ try {
     Show-Summary
 }
 catch {
-    Write-Host "`n✗ FATAL ERROR: $_" -ForegroundColor Red
-    Write-Host $_.ScriptStackTrace -ForegroundColor Red
+    Write-Error "`n✗ FATAL ERROR: Unable to complete assessment"
+    Write-Error "Error Details: $($_.Exception.Message)"
+    Write-Verbose $_.ScriptStackTrace
+    Write-Information "`nFor troubleshooting help, visit: https://github.com/mobieus10036/M365Assessment/issues" -InformationAction Continue
     exit 1
 }
 finally {
