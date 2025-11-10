@@ -44,10 +44,36 @@ function Test-SPFDKIMDmarc {
             }
         }
 
-        # Check DKIM configuration
+        # Check DKIM configuration for each domain
         $dkimConfigs = Get-DkimSigningConfig -ErrorAction SilentlyContinue
         $enabledDkimDomains = @($dkimConfigs | Where-Object { $_.Enabled -eq $true })
         $dkimCount = $enabledDkimDomains.Count
+
+        # Identify domains without DKIM enabled
+        $domainsWithoutDKIM = @()
+        $domainsMissingConfig = @()
+        
+        foreach ($domain in $domains) {
+            $dkimConfig = $dkimConfigs | Where-Object { $_.Domain -eq $domain.DomainName }
+            
+            if (-not $dkimConfig) {
+                # No DKIM configuration exists at all (returns warning from Get-DkimSigningConfig)
+                $domainsMissingConfig += $domain.DomainName
+                $domainsWithoutDKIM += [PSCustomObject]@{
+                    Domain = $domain.DomainName
+                    Status = "Not Configured"
+                    Enabled = $false
+                }
+            }
+            elseif ($dkimConfig.Enabled -ne $true) {
+                # DKIM config exists but not enabled
+                $domainsWithoutDKIM += [PSCustomObject]@{
+                    Domain = $domain.DomainName
+                    Status = "Disabled"
+                    Enabled = $false
+                }
+            }
+        }
 
         $totalDomains = @($domains).Count
         $dkimPercentage = if ($totalDomains -gt 0) {
@@ -72,6 +98,10 @@ function Test-SPFDKIMDmarc {
 
         $message = "DKIM enabled for $dkimCount/$totalDomains domains"
         
+        if ($domainsWithoutDKIM.Count -gt 0) {
+            $message += " ($($domainsWithoutDKIM.Count) domain(s) need DKIM enabled)"
+        }
+        
         # Note: SPF and DMARC are DNS records - can't check directly via PowerShell
         $message += ". Note: SPF and DMARC require DNS validation (manual check recommended)"
 
@@ -89,10 +119,12 @@ function Test-SPFDKIMDmarc {
                 TotalDomains = $totalDomains
                 DKIMEnabledDomains = $dkimCount
                 DKIMPercentage = $dkimPercentage
-                DomainsWithoutDKIM = @($dkimConfigs | Where-Object { $_.Enabled -ne $true }).Count
+                DomainsWithoutDKIM = $domainsWithoutDKIM.Count
+                DomainsWithoutDKIMList = $domainsWithoutDKIM
             }
+            DomainsWithoutDKIM = $domainsWithoutDKIM
             Recommendation = if ($status -ne "Pass") {
-                "Enable DKIM for all domains. Verify SPF and DMARC DNS records for each domain."
+                "Enable DKIM for all domains. Verify SPF and DMARC DNS records for each domain. Specific domains needing DKIM: $($domainsWithoutDKIM.Domain -join ', ')"
             } else {
                 "DKIM is enabled. Manually verify SPF (TXT record) and DMARC (TXT record) in DNS for all domains."
             }

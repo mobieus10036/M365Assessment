@@ -422,6 +422,21 @@ function Export-HTMLReport {
             $detailsCell += "</ul>"
         }
         
+        # Handle domains without DKIM from SPF/DKIM/DMARC check
+        if ($result.DomainsWithoutDKIM -and $result.DomainsWithoutDKIM.Count -gt 0) {
+            $detailsCell += "<br><br><strong>⚠️ Domains Without DKIM ($($result.DomainsWithoutDKIM.Count)):</strong><br>"
+            $detailsCell += "<ul style='margin-top: 5px; padding-left: 20px; font-size: 0.9em;'>"
+            foreach ($domain in $result.DomainsWithoutDKIM) {
+                $statusBadge = if ($domain.Status -eq "Not Configured") {
+                    '<span style="color: #d13438; font-weight: bold;">Not Configured</span>'
+                } else {
+                    '<span style="color: #ff8c00; font-weight: bold;">Disabled</span>'
+                }
+                $detailsCell += "<li><code>$($domain.Domain)</code> - $statusBadge</li>"
+            }
+            $detailsCell += "</ul>"
+        }
+        
         $resultsHtml += @"
         <tr class="$statusClass">
             <td>$($result.CheckName)</td>
