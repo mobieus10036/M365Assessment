@@ -73,7 +73,11 @@ function Test-MFAConfiguration {
                     $usersWithMFA++
                 }
                 else {
-                    $usersWithoutMFA += $user.UserPrincipalName
+                    $usersWithoutMFA += [PSCustomObject]@{
+                        UserPrincipalName = $user.UserPrincipalName
+                        DisplayName = $user.DisplayName
+                        UserId = $user.Id
+                    }
                 }
             }
             catch {
@@ -103,7 +107,7 @@ function Test-MFAConfiguration {
         $message = "MFA adoption: $mfaPercentage% ($usersWithMFA/$totalUsers users)"
         
         if ($usersWithoutMFA.Count -gt 0 -and $usersWithoutMFA.Count -le 10) {
-            $message += ". Users without MFA: $($usersWithoutMFA -join ', ')"
+            $message += ". Users without MFA: $($usersWithoutMFA.UserPrincipalName -join ', ')"
         }
         elseif ($usersWithoutMFA.Count -gt 10) {
             $message += ". $($usersWithoutMFA.Count) users without MFA"
@@ -122,6 +126,7 @@ function Test-MFAConfiguration {
                 CompliancePercentage = $mfaPercentage
                 Threshold = $threshold
             }
+            UsersWithoutMFA = $usersWithoutMFA
             Recommendation = if ($status -ne "Pass") {
                 "Enable MFA for all users via Conditional Access policies. Target: $threshold% adoption"
             } else {

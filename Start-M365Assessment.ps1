@@ -379,6 +379,16 @@ function Export-Results {
             Write-Success "Conditional Access policies CSV: $caPoliciesCsvPath"
             Write-Info "  → $($caResult.EnabledPolicies.Count) policy/policies exported"
         }
+
+        # Export users without MFA to separate CSV
+        $mfaResult = $script:AssessmentResults | Where-Object { $_.CheckName -eq "MFA Enforcement" -and $_.UsersWithoutMFA }
+        if ($mfaResult -and $mfaResult.UsersWithoutMFA.Count -gt 0) {
+            $usersWithoutMFACsvPath = Join-Path $OutputPath "$($baseFileName)_UsersWithoutMFA.csv"
+            $mfaResult.UsersWithoutMFA | 
+                Export-Csv -Path $usersWithoutMFACsvPath -NoTypeInformation -Encoding UTF8
+            Write-Success "Users without MFA CSV: $usersWithoutMFACsvPath"
+            Write-Info "  → $($mfaResult.UsersWithoutMFA.Count) user(s) without MFA exported"
+        }
     }
 
     # HTML Export
