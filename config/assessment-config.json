@@ -17,9 +17,15 @@
     "MailboxAuditingEnabled": true
   },
   "SharePoint": {
-    "ExternalSharingLevel": "ExistingExternalUserSharingOnly",
+    "ExternalSharingLevel": "ExternalUserSharingOnly",
     "RequireAnonymousLinksExpire": true,
-    "AnonymousLinkExpirationDays": 30
+    "AnonymousLinkExpirationDays": 30,
+    "InactiveDaysThreshold": 90,
+    "LegacyAuthAllowed": false,
+    "RequireAcceptingAccountMatch": true,
+    "ShowEveryoneClaim": false,
+    "DisallowInfectedFileDownload": true,
+    "MinOrphanedOneDriveRetentionDays": 365
   },
   "Teams": {
     "AllowGuestAccess": true,
