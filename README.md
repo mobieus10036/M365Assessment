@@ -76,3 +76,27 @@ Edit `config/assessment-config.json` or pass a custom file:
 ## License
 
 MIT — see `LICENSE`.
+
+## Contributing
+
+Keep Markdown succinct and emoji-free.
+
+- Format and normalize:
+
+```powershell
+pwsh -File tools/Format-Markdown.ps1
+```
+
+- Optional: enable pre-commit hook:
+
+```powershell
+git config core.hooksPath .githooks
+```
+
+- Optional: lint locally:
+
+```bash
+npx -y markdownlint-cli2 "**/*.md"
+```
+
+Pull requests are linted in CI.

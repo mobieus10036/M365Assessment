@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Run Markdown formatter and lint before commit
+pwsh -NoLogo -NoProfile -File "tools/Format-Markdown.ps1" || exit 1
+echo "Running markdownlint..."
+npx -y markdownlint-cli2 "**/*.md" || exit 1
