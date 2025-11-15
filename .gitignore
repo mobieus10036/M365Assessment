@@ -1,11 +1,5 @@
-# Reports (generated output)
-reports/*.html
-reports/*.json
-reports/*.csv
-reports/*.xlsx
-
-# Keep the reports folder structure
-!reports/.gitkeep
+# Reports (generated output) - Never commit reports to repo
+reports/
 
 # PowerShell
 *.ps1xml

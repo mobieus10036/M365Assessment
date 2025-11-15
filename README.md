@@ -79,8 +79,6 @@ Or just use **Global Administrator** if you have it (gives access to everything)
 - Inactive users with licenses
 - Optimization opportunities
 
-> **Known Issue**: SharePoint and Teams modules are currently disabled due to PowerShell 7 compatibility issues with some Microsoft modules. Working on fixing this.
-
 ## Understanding the Reports
 
 After running the assessment, you'll find several files in the `reports/` folder:
@@ -125,41 +123,23 @@ Use a custom config file:
 .\Start-M365Assessment.ps1 -ConfigPath .\my-config.json
 ```
 
-## Fixing Issues
+## Need Help?
 
-### Enabling Mailbox Auditing
-
-If the assessment finds mailboxes without auditing enabled, you can fix them using:
-
-```powershell
-# See what would change (doesn't actually change anything)
-.\Enable-MailboxAuditing.ps1 -WhatIf
-
-# Enable auditing on all non-compliant mailboxes
-.\Enable-MailboxAuditing.ps1
-
-# Skip confirmations
-.\Enable-MailboxAuditing.ps1 -Force
-```
-
-The script reads the latest CSV report and enables auditing where needed.
-
-## Documentation
-
-More detailed info is in the `docs/` folder:
-- [Best Practices Reference](docs/best-practices-reference.md)
-- [DNS Validation Guide](docs/QUICK-REFERENCE-DNS-VALIDATION.md)
-- [Remediation Guides](docs/remediation-guides/)
+If you encounter issues or have questions:
+- **Found a bug?** [Open an issue](https://github.com/mobieus10036/m365-security-guardian/issues)
+- **Have a question?** [Start a discussion](https://github.com/mobieus10036/m365-security-guardian/discussions)
+- **Security concern?** See [SECURITY.md](SECURITY.md)
 
 ## Contributing
 
 I'm learning, so if you see ways to improve the code, please feel free to:
+
 1. Open an issue
 2. Fork the repo
 3. Make your changes
 4. Submit a pull request
 
-Check [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+Your contributions and feedback help me learn and improve the project!
 
 ## License
 

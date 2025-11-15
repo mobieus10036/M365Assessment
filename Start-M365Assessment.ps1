@@ -83,6 +83,21 @@ param(
 
 #Requires -Version 5.1
 
+# Import required modules
+Write-Verbose "Loading Microsoft Graph modules..."
+try {
+    Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
+    Import-Module Microsoft.Graph.Users -ErrorAction Stop
+    Import-Module Microsoft.Graph.Identity.DirectoryManagement -ErrorAction Stop
+    Import-Module Microsoft.Graph.Identity.SignIns -ErrorAction Stop
+    Import-Module Microsoft.Graph.Groups -ErrorAction Stop
+}
+catch {
+    Write-Error "Failed to load Microsoft Graph modules. Please run .\Install-Prerequisites.ps1"
+    Write-Error $_.Exception.Message
+    exit 1
+}
+
 # Script variables
 $script:StartTime = Get-Date
 $script:AssessmentResults = @()
